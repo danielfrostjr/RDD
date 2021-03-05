@@ -1,0 +1,119 @@
+% Replication 1
+% Daniel Frost
+% `s c(current_date)`
+
+
+Part 1
+===
+
+	use https://github.com/scunning1975/causal-inference-class/raw/master/hansen_dwi, clear
+
+	
+Part 2
+===
+
+Part 3
+===
+	gen bac_dummy = (bac1 >= 0.08)
+	
+Part 4
+===
+The very small added value is added to make the histogram more smooth.
+
+	quietly hist bac1, width(0.001000001)
+
+	quietly rddensity bac1, c(0.08) kernel(uniform)
+	di e(pv_q)
+
+The p-value from the density test is .92521283.
+	
+	quietly graph export ".\Figures\pic1.png", width(500) replace
+![](../Figures/pic1.png)
+
+There is no clear evidence of manipulation on the running variable. Otherwise, we would see a sharp discontinuity in the histogram.
+
+Part 5
+===
+	quietly rdrobust male bac1, c(0.08) h(0.05) kernel(uniform)
+	eststo
+	quietly rdrobust white bac1, c(0.08) h(0.05) kernel(uniform)
+	eststo
+	quietly rdrobust aged bac1, c(0.08) h(0.05) kernel(uniform)
+	eststo
+	quietly rdrobust acc bac1, c(0.08) h(0.05) kernel(uniform)
+	eststo
+	esttab using ".\Tables\table1.tex", se("%g") label title("Covariate Balance") mtitles("Male" "White" "Age" "Accident") replace rename(RD_Estimate DUI)
+	eststo clear
+\input{../Tables/table1.tex}
+
+	quietly cmogram acc bac1, scatter cutpoint(0.08)
+	quietly graph export ".\Figures\pic2.png", width(500) replace
+![](../Figures/pic2.png)
+
+Part 6
+===
+
+//cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
+//cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
+//cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
+//cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
+
+linear cmogram
+	quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+	quietly graph export ".\Figures\pic3.png", width(500) replace
+	quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+	quietly graph export ".\Figures\pic4.png", width(500) replace
+	quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+	quietly graph export ".\Figures\pic5.png", width(500) replace
+	quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+	quietly graph export ".\Figures\pic6.png", width(500) replace
+
+//quad cmogram
+	quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+	quietly graph export ".\Figures\pic7.png", width(500) replace
+	quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+	quietly graph export ".\Figures\pic8.png", width(500) replace
+	quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+	quietly graph export ".\Figures\pic9.png", width(500) replace
+	quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+	quietly graph export ".\Figures\pic10.png", width(500) replace
+
+Part 7
+
+	quietly gen bac_sq = bac1 * bac1
+	quietly gen bac_inter = bac1* bac_dummy
+	quietly gen bac_inter_sq = bac1 * bac1 * bac_dummy
+
+	quietly rdrobust recidivism bac1 if bac1 >= 0.03 & bac1 <= 0.13, c(0.08) h(0.05) kernel(uniform) covs(bac1) all
+	eststo
+	quietly rdrobust recidivism bac1 if bac1 >= 0.03 & bac1 <= 0.13, c(0.08) h(0.05) kernel(uniform) covs(bac1 	bac_dummy bac_inter) all
+	eststo
+	quietly rdrobust recidivism bac1 if bac1 >= 0.03 & bac1 <= 0.13, c(0.08) h(0.05) kernel(uniform) covs(bac1 bac_dummy bac_inter bac_sq bac_inter_sq) all
+	eststo
+	
+	esttab using ".\Tables\table2.tex", se("%g") label title("Panel A: Recidivism Local Linear Regression") mtitles("BAC control" "Linear interaction" "Linear, quad. interactions") replace drop(Conventional Bias*)
+	eststo clear
+	
+	quietly rdrobust recidivism bac1 if bac1 >= 0.055 & bac1 <= 0.105, c(0.08) h(0.05) kernel(uniform) covs(bac1) all
+	eststo
+	quietly rdrobust recidivism bac1 if bac1 >= 0.055 & bac1 <= 0.105, c(0.08) h(0.05) kernel(uniform) covs(bac1 	bac_dummy bac_inter) all
+	eststo
+	quietly rdrobust recidivism bac1 if bac1 >= 0.055 & bac1 <= 0.105, c(0.08) h(0.05) kernel(uniform) covs(bac1 bac_dummy bac_inter bac_sq bac_inter_sq) all
+	eststo
+	
+	esttab using ".\Tables\table3.tex", se("%g") label title("Panel B: Recidivism Local Linear Regression") mtitles("BAC control" "Linear interaction" "Linear, quad. interactions") replace drop(Conventional Bias*)
+	eststo clear
+	
+\input{../Tables/table2.tex}
+\input{../Tables/table3.tex}
+
+Part 8
+Linear cmogram
+	quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) lfitci lineat(0.08)
+	quietly graph export ".\Figures\pic11.png", width(500) replace
+
+	quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) qfitci lineat(0.08)
+	quietly graph export ".\Figures\pic12.png", width(500) replace
+	
+A change in working directory is needed to let the pdf compile correctly.
+	cd "C:\Users\Daniel\Documents\MA_Econ\Causal_Inference\Replications\RDD\Do\"
