@@ -6,11 +6,21 @@
 Part 1
 ===
 
+Link to my Github repo: https://github.com/danielfrostjr/RDD
+
 	use https://github.com/scunning1975/causal-inference-class/raw/master/hansen_dwi, clear
 
 	
 Part 2
 ===
+
+Hansen examines the effects of higher punishments associated with legal blood alchohol content cutoffs. He determines whether these legal penalties have the effect of deterring future recidivism.
+
+Hansen's paper uses data on DUI stops from the Washington State Impaired  Driver Testing Program, 1999–2007. The data contains measured BAC levels to a precision of 0.001, with two measurements. The data also includes demographic variables such as age and race, and a variable for whether an accident occurred.
+
+His identification uses a regression discontinuity design to examine the effects of crossing the specific BAC thresholds. He controls for other demographic covariates in his local linear regression. This approach relies on assumptions such as nonmanipulation of the running variable (BAC), which he tests for using the McCrary density test.
+
+Hansen finds that exceeding the DUI threshold or the aggravated DUI threshold reduces redicivism by 17% or 9%, respectively (in relative terms). The results of his local linear regression find a highly significant effect on recidivism. He concludes that futher increasing the DUI penalties can effectively discourage drunk driving.
 
 Part 3
 ===
@@ -18,19 +28,23 @@ Part 3
 	
 Part 4
 ===
-The very small added value is added to make the histogram more smooth.
+The very small added width value is used to make the histogram more smooth.
 
-	quietly hist bac1, width(0.001000001)
+	quietly hist bac1, width(0.001000001) xline(0.08) xtitle("BAC") title("Histogram of Blood Alchol Content")
 
 	quietly rddensity bac1, c(0.08) kernel(uniform)
 	di e(pv_q)
 
 The p-value from the density test is .92521283.
 	
-	quietly graph export ".\Figures\pic1.png", width(500) replace
+	quietly graph export ".\Figures\pic1.png", width(800) replace
 ![](../Figures/pic1.png)
 
-There is no clear evidence of manipulation on the running variable. Otherwise, we would see a sharp discontinuity in the histogram.
+To test if people could manipulate their BAC levels, we would use a desnsity discontinuity test. Hansen mentions the McCracy density test, while our rdrobust command uses methods developed by Cattaneo, Jansson and Ma (2020), according to the rddensity documentation.
+
+There is no clear evidence of manipulation on the running variable. Otherwise, we would see heaping in the histogram near the 0.08 cutoff, or a significant p-value for our density test.
+
+This apparent nonmanipulation is similar to what Hansen found. The p-value for his McCrary density test was 0.59 at the 0.08 BAC cutoff, which is insignificant. He also concluded that there is no non-random heaping on the histogram, and his histogram appears virtually identical to mine.
 
 Part 5
 ===
@@ -46,39 +60,51 @@ Part 5
 	eststo clear
 \input{../Tables/table1.tex}
 
-	quietly cmogram acc bac1, scatter cutpoint(0.08)
-	quietly graph export ".\Figures\pic2.png", width(500) replace
-![](../Figures/pic2.png)
+These results are favorable: none of the coefficients are significantly different from 0, which means they are not significantly affected by exceeding the BAc cutoff. The covariates appear balanced near the cutoff.
 
 Part 6
 ===
 
-//cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
-//cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
-//cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
-//cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfit lineat(0.08)
+Linear cmograms:
+	quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Accident at scene"))
+	quietly graph export ".\Figures\pic3.png", width(800) replace
+	quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Male"))
+	quietly graph export ".\Figures\pic4.png", width(800) replace
+	quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Age"))
+	quietly graph export ".\Figures\pic5.png", width(800) replace
+	quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("White"))
+	quietly graph export ".\Figures\pic6.png", width(800) replace
 
-linear cmogram
-	quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
-	quietly graph export ".\Figures\pic3.png", width(500) replace
-	quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
-	quietly graph export ".\Figures\pic4.png", width(500) replace
-	quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
-	quietly graph export ".\Figures\pic5.png", width(500) replace
-	quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
-	quietly graph export ".\Figures\pic6.png", width(500) replace
+![Accident at scene](../Figures/pic3.png){width=60%}
+![Male](../Figures/pic4.png){width=60%}
+![Age](../Figures/pic5.png){width=60%}
+![White](../Figures/pic6.png){width=60%}
 
-//quad cmogram
-	quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
-	quietly graph export ".\Figures\pic7.png", width(500) replace
-	quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
-	quietly graph export ".\Figures\pic8.png", width(500) replace
-	quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
-	quietly graph export ".\Figures\pic9.png", width(500) replace
-	quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
-	quietly graph export ".\Figures\pic10.png", width(500) replace
+	
+Quad cmograms:
+	quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Accident at scene"))
+	quietly graph export ".\Figures\pic7.png", width(800) replace
+	quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Male"))
+	quietly graph export ".\Figures\pic8.png", width(800) replace
+	quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Age"))
+	quietly graph export ".\Figures\pic9.png", width(800) replace
+	quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("White"))
+	quietly graph export ".\Figures\pic10.png", width(800) replace
+
+
+![Accident at scene](../Figures/pic7.png){width=60%}
+![Male](../Figures/pic8.png){width=60%}
+![Age](../Figures/pic9.png){width=60%}
+![White](../Figures/pic10.png){width=60%}
+
+None of these graphs show a sudden jump in accident or demographic variables when the BAC discretely rises from below 0.08 to above the cutoff. The variables do vary with BAC, but they do so continuously in both the linear and quadratic fits.
+
+Hansen found that demographic variables and variables such as prior offenses or accident at scene are stable near the cutoffs. We find a similar result in our graphs: There is not a sharp discontinuity in these varibles below and above the 0.08 BAC cutoff.
 
 Part 7
+===
+
+The standard errors are robust against heteroskedasticity.
 
 	quietly gen bac_sq = bac1 * bac1
 	quietly gen bac_inter = bac1* bac_dummy
@@ -101,19 +127,33 @@ Part 7
 	quietly rdrobust recidivism bac1 if bac1 >= 0.055 & bac1 <= 0.105, c(0.08) h(0.05) kernel(uniform) covs(bac1 bac_dummy bac_inter bac_sq bac_inter_sq) all
 	eststo
 	
-	esttab using ".\Tables\table3.tex", se("%g") label title("Panel B: Recidivism Local Linear Regression") mtitles("BAC control" "Linear interaction" "Linear, quad. interactions") replace drop(Conventional Bias*)
+	esttab using ".\Tables\table3.tex", se("%g") label title("Panel B: Recidivism Local Linear Regression") mtitles("BAC control" "Linear interaction" "Linear, quad. interactions") replace drop(Conventional Bias*)  rename(Robust DUI) gaps 
 	eststo clear
 	
 \input{../Tables/table2.tex}
 \input{../Tables/table3.tex}
 
 Part 8
+===
 Linear cmogram
-	quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) lfitci lineat(0.08)
-	quietly graph export ".\Figures\pic11.png", width(500) replace
+	quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Recidivism against BAC, linear fit"))
+	quietly graph export ".\Figures\pic11.png", width(800) replace
 
-	quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) qfitci lineat(0.08)
-	quietly graph export ".\Figures\pic12.png", width(500) replace
+	quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Recidivism against BAC, quadratic fit"))
+	quietly graph export ".\Figures\pic12.png", width(800) replace
 	
+	
+![](../Figures/pic11.png)	
+
+![](../Figures/pic12.png)	
+
 A change in working directory is needed to let the pdf compile correctly.
 	cd "C:\Users\Daniel\Documents\MA_Econ\Causal_Inference\Replications\RDD\Do\"
+	
+Part 9
+===
+I learned about testing for manipulability by chicking for heaps and perfomring density tests. I learned to check for covariate balance at cutoffs, and how to perform local linear regressions. The hypothesis I tested was that a BAC in excess of 0.08 has a causal effect on reducing future recidivism. I found evidence of this in my local linear regression, especially in the estimates that controlled for BAC interactions. This allowed me to better isolate the effect of going over the cutoff.
+
+The results were highly significant for some entries in the regression output. However, I noticed that the effect size was abnormally high for Panel B, with quadratic interactions, where the DUI coefficient was -0.309. This discrepancy was most likely caused by a difference or error in my methodology. This may be because we were allowed to control for BAC very tightly compared to Hansen's methodology, where his regression controls were mainly for demographic variables.
+
+I am fairly confident in Hansen's original conclusions because he showed that manipulation was not clearly observed in the data, and because the results in the regression for recidivism were extremely significant. Also, his results and lack of manipulability make intuitive sense. Neither the driver nor the police officer would not be able to alter the blood alchol content very accurately.

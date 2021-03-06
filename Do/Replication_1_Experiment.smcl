@@ -3,7 +3,7 @@
       name:  {res}<unnamed>
        {txt}log:  {res}C:\Users\Daniel\Documents\MA_Econ\Causal_Inference\Replications\RDD\Do\Replication_1_Experiment.smcl
   {txt}log type:  {res}smcl
- {txt}opened on:  {res} 5 Mar 2021, 13:09:33
+ {txt}opened on:  {res} 5 Mar 2021, 23:07:37
 {txt}
 {com}. //_1
 . display c(current_date)
@@ -16,51 +16,18 @@
 . gen bac_dummy = (bac1 >= 0.08)
 {txt}
 {com}. //_4
-. quietly hist bac1, width(0.001000001)
+. quietly hist bac1, width(0.001000001) xline(0.08) xtitle("BAC") title("Histogram of Blood Alchol Content")
 {txt}
 {com}. //_5
-. rddensity bac1, c(0.08) kernel(uniform)
-{res}Computing data-driven bandwidth selectors.
-
-Point estimates and standard errors have been adjusted for repeated observations.
-(Use option {it:nomasspoints} to suppress this adjustment.)
-
-RD Manipulation test using local polynomial density estimation.
-
-{txt}{ralign 9: c = }{res}    0.080{col 19} {c |}{col 22}{txt}Left of c{col 33}Right of c{col 53}Number of obs = {res}      214558
-{txt}{hline 19}{c +}{hline 22}{col 53}Model         = {res}{ralign 12:unrestricted}
-{txt}{ralign 18:Number of obs}{col 19} {c |} {col 21}{res}    23010{col 34}   191548{col 53}{txt}BW method     = {res}{ralign 12:comb}
-{txt}{ralign 18:Eff. Number of obs}{col 19} {c |} {col 21}{res}    14727{col 34}    28946{col 53}{txt}Kernel        = {res}{ralign 12:uniform}
-{txt}{ralign 18:Order est. (p)}{col 19} {c |} {col 21}{res}        2{col 34}        2{col 53}{txt}VCE method    = {res}{ralign 12:jackknife}
-{txt}{ralign 18:Order bias (q)}{col 19} {c |} {col 21}{res}        3{col 34}        3
-{txt}{ralign 18:BW est. (h)}{col 19} {c |} {col 21}{res}    0.023{col 34}    0.023
-
-Running variable: bac1.
-{txt}{hline 19}{c TT}{hline 22}
-{ralign 18:Method}{col 19} {c |} {col 23}    T{col 38}P>|T|
-{hline 19}{c +}{hline 22}
-{ralign 18:Robust}{col 19} {c |} {col 21}{res}  -0.0939{col 34}   0.9252
-{txt}{hline 19}{c BT}{hline 22}
-
-{res}P-values of binomial tests.{txt} (H0: prob = .5)
-{hline 19}{c TT}{hline 22}{c TT}{hline 10}
-{ralign 18: Window Length / 2}{col 20}{c |}{ralign 9: <c}{col 33}{ralign 9: >=c}{col 43}{c |}{col 49}P>|T|
-{hline 19}{c +}{hline 22}{c +}{hline 10}
-{res}{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{col 10}    0.000{col 20}{c |}      909{col 33}        0{col 43}{c |}{col 45}   0.0000
-{txt}{hline 19}{c BT}{hline 22}{c BT}{hline 10}
-{res}{txt}
-{com}. quietly graph export ".\Figures\pic1.png", width(500) replace
+. quietly rddensity bac1, c(0.08) kernel(uniform)
+{txt}
+{com}. di e(pv_q)
+{res}.92521283
 {txt}
 {com}. //_6
+. quietly graph export ".\Figures\pic1.png", width(800) replace
+{txt}
+{com}. //_7
 . quietly rdrobust male bac1, c(0.08) h(0.05) kernel(uniform)
 {txt}
 {com}. eststo
@@ -86,44 +53,39 @@ Running variable: bac1.
 
 {com}. eststo clear
 {txt}
-{com}. //_7
-. quietly cmogram acc bac1, scatter cutpoint(0.08)
-{txt}
-{com}. quietly graph export ".\Figures\pic2.png", width(500) replace
-{txt}
 {com}. //_8
-. quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+. quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Accident at scene"))
 {txt}
-{com}. quietly graph export ".\Figures\pic3.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic3.png", width(800) replace
 {txt}
-{com}. quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+{com}. quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Male"))
 {txt}
-{com}. quietly graph export ".\Figures\pic4.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic4.png", width(800) replace
 {txt}
-{com}. quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+{com}. quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Age"))
 {txt}
-{com}. quietly graph export ".\Figures\pic5.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic5.png", width(800) replace
 {txt}
-{com}. quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08)
+{com}. quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("White"))
 {txt}
-{com}. quietly graph export ".\Figures\pic6.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic6.png", width(800) replace
 {txt}
 {com}. //_9
-. quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+. quietly cmogram acc bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Accident at scene"))
 {txt}
-{com}. quietly graph export ".\Figures\pic7.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic7.png", width(800) replace
 {txt}
-{com}. quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+{com}. quietly cmogram male bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Male"))
 {txt}
-{com}. quietly graph export ".\Figures\pic8.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic8.png", width(800) replace
 {txt}
-{com}. quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+{com}. quietly cmogram aged bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Age"))
 {txt}
-{com}. quietly graph export ".\Figures\pic9.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic9.png", width(800) replace
 {txt}
-{com}. quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08)
+{com}. quietly cmogram white bac1 if bac1 <= 0.2 & bac1 >= 0.04, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("White"))
 {txt}
-{com}. quietly graph export ".\Figures\pic10.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic10.png", width(800) replace
 {txt}
 {com}. //_10
 . quietly gen bac_sq = bac1 * bac1
@@ -171,20 +133,20 @@ Running variable: bac1.
 {txt}({res}est3{txt} stored)
 
 {com}. //_14
-. esttab using ".\Tables\table3.tex", se("%g") label title("Panel B: Recidivism Local Linear Regression") mtitles("BAC control" "Linear interaction" "Linear, quad. interactions") replace drop(Conventional Bias*)
+. esttab using ".\Tables\table3.tex", se("%g") label title("Panel B: Recidivism Local Linear Regression") mtitles("BAC control" "Linear interaction" "Linear, quad. interactions") replace drop(Conventional Bias*)  rename(Robust DUI) gaps 
 {res}{txt}(output written to {browse  `".\Tables\table3.tex"'})
 
 {com}. eststo clear
 {txt}
 {com}. //_15
-. quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) lfitci lineat(0.08)
+. quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) lfitci lineat(0.08) graphopts(xtitle("BAC") title("Recidivism against BAC, linear fit"))
 {txt}
-{com}. quietly graph export ".\Figures\pic11.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic11.png", width(800) replace
 {txt}
 {com}. //_16
-. quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) qfitci lineat(0.08)
+. quietly cmogram recidivism bac1 if bac1 <= 0.15, scatter cutpoint(0.08) qfitci lineat(0.08) graphopts(xtitle("BAC") title("Recidivism against BAC, quadratic fit"))
 {txt}
-{com}. quietly graph export ".\Figures\pic12.png", width(500) replace
+{com}. quietly graph export ".\Figures\pic12.png", width(800) replace
 {txt}
 {com}. //_17
 . cd "C:\Users\Daniel\Documents\MA_Econ\Causal_Inference\Replications\RDD\Do\"
@@ -195,7 +157,7 @@ Running variable: bac1.
       {txt}name:  {res}<unnamed>
        {txt}log:  {res}C:\Users\Daniel\Documents\MA_Econ\Causal_Inference\Replications\RDD\Do\Replication_1_Experiment.smcl
   {txt}log type:  {res}smcl
- {txt}closed on:  {res} 5 Mar 2021, 13:10:43
+ {txt}closed on:  {res} 5 Mar 2021, 23:08:44
 {txt}{.-}
 {smcl}
 {txt}{sf}{ul off}
